@@ -8,6 +8,7 @@ from toysocks.socks5 import decode_greating, decode_connection_request, \
 from toysocks.utils import SocketFailure, check_socket
 from toysocks.relay import relay
 from toysocks.encrypt import Encryptor, XOREncryptor, Plain
+from toysocks.port_selector import PortSelector
 
 import traceback
 import logging
@@ -29,11 +30,13 @@ class SSLocal(AsyncFunc):
                loop: EventLoop,
                local_addr: Tuple[str, int],
                remote_addr: Tuple[str, Union[int, List[int]]],
-               encryptor : Encryptor):
+               encryptor : Encryptor,
+               port_selector: PortSelector):
     self.loop = loop
     self.local_ip, self.local_port = local_addr
     self.remote_ip, self.remote_port = remote_addr
     self.encryptor = encryptor
+    self.port_selector = port_selector
 
   @property
   def coroutine(self):
@@ -78,8 +81,6 @@ class SSLocal(AsyncFunc):
         client_sock.close()
 
   def socks_auth(self, client_sock : socket.socket, client_addr : Tuple[str, int]):
-
-
     """
     Initial greeting from client:
     +---------------------+
@@ -129,6 +130,9 @@ class SSLocal(AsyncFunc):
 
     yield from self.local_relay(client_sock, client_addr, request_bytes)
 
+  def select_port(self, ports: List[int]):
+    return self.port_selector.select(ports)
+
   def local_relay(self, client_sock : socket.socket, client_addr : Tuple[str, int], request_bytes):
     try:
       ver, cmd_code, addr_type, dest_addr, port = decode_connection_request(request_bytes)
@@ -142,7 +146,7 @@ class SSLocal(AsyncFunc):
           if isinstance(self.remote_port, int):
             remote_sock.connect((self.remote_ip, self.remote_port))
           elif isinstance(self.remote_port, list):
-            port_choice = random.choice(self.remote_port)
+            port_choice = self.select_port(self.remote_port)
             remote_sock.connect((self.remote_ip, port_choice))
           else:
             raise ValueError(self.remote_port)
