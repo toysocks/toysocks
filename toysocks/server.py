@@ -87,7 +87,9 @@ class SSServer(AsyncFunc):
         if addr_type == 3:
           real_addr = dest_addr[1:]
           try:
-            server_sock.connect((real_addr.decode('utf-8'), bytes_to_port_num(port)))
+            server_dest = real_addr.decode('utf-8'), bytes_to_port_num(port)
+            logging.info("%s:%d reaching for %s:%d" % (local_addr + server_dest))
+            server_sock.connect(server_dest)
           except BlockingIOError:
             pass
 
