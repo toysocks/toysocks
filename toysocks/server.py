@@ -2,7 +2,7 @@ from toysocks.eventloop import AsyncFunc, Future, EventLoop, register_read, regi
   register_read_write, unregister
 from selectors import EVENT_WRITE, EVENT_READ
 from toysocks.utils import sock_callback, reg_socket_future_read, reg_socket_future_write,\
-  close_if
+  close_if, reg_multi_sockets_future_read
 from toysocks.socks5 import decode_greating, decode_connection_request, \
   encode_connection_repsonse
 from toysocks.utils import SocketFailure, check_socket, bytes_to_port_num
@@ -18,9 +18,9 @@ class SSServer(AsyncFunc):
 
   def __init__(self,
                loop: EventLoop,
-               remote_addr: Tuple[str, int],
+               remote_addr: Tuple[str, List[int]],
                encryptor : Encryptor):
-    self.remote_ip, self.remote_port = remote_addr
+    self.remote_ip, self.remote_ports = remote_addr
     self.encryptor = encryptor
     self.loop = loop
 
@@ -29,27 +29,33 @@ class SSServer(AsyncFunc):
     return self.run()
 
   def run(self):
+    remote_socks = []
+    for port in self.remote_ports:
+      remote_sock = socket.socket()
+      remote_sock.setblocking(False)
+      remote_sock.bind((self.remote_ip, port))
+      remote_sock.listen()
+      remote_socks.append(remote_sock)
 
-    local_sock = socket.socket()
-    local_sock.setblocking(False)
-    local_sock.bind((self.remote_ip, self.remote_port))
-    local_sock.listen()
-
-    logging.info("Listening at %s:%s" % (self.remote_ip, self.remote_port))
+    for s in remote_socks:
+      logging.info("Listening at %s:%s" % (s.getsockname()))
 
     try:
       while True:
-        yield from self.wait_client_connection(local_sock)
+        yield from self.wait_client_connection(remote_socks)
     finally:
-      local_sock.close()
+      for s in remote_socks:
+        s.close()
 
-  def wait_client_connection(self, remote_sock: socket.socket):
+  def wait_client_connection(self, remote_socks: List[socket.socket]):
     future = Future()
-    reg_socket_future_read(future, remote_sock)
-    yield future
+    #reg_socket_future_read(future, remote_sock)
+    reg_multi_sockets_future_read(future, remote_socks)
+    remote_sock = yield future
     local_sock, local_addr = remote_sock.accept()
     local_sock.setblocking(False)
-    logging.info("Connection from %s:%s" % local_addr)
+
+    logging.info("Connection from %s:%d to %s:%d" % (local_addr + remote_sock.getsockname()))
     self.loop.add_event(self.local_handle(local_sock, local_addr))
 
   def local_handle(self, local_sock : socket.socket, local_addr : Tuple[str, int]):
@@ -73,9 +79,7 @@ class SSServer(AsyncFunc):
     server_sock.setblocking(False)
 
     def local_data_to_server_data(data : bytes, offset : int):
-      logging.debug("offset = %d, |data|: %d" % (offset, len(data)))
       decoded_data = self.encryptor.decode(data, offset)
-      logging.debug("|decoded_data|: %d" % len(data))
       if offset == 0:
         addr_type, dest_addr, port = decode_sock5_addr(decoded_data)
         if addr_type != 3: # TODO: Type 1 and Type 4
@@ -83,13 +87,10 @@ class SSServer(AsyncFunc):
         if addr_type == 3:
           real_addr = dest_addr[1:]
           try:
-            logging.debug("Connecting to %s:%s" % (real_addr.decode('utf-8'), bytes_to_port_num(port)))
             server_sock.connect((real_addr.decode('utf-8'), bytes_to_port_num(port)))
           except BlockingIOError:
             pass
 
-        logging.debug("head len: %d" % (1 + len(dest_addr) + len(port)))
-        logging.debug("data recv from local:\n%s" % decoded_data[1 + len(dest_addr) + len(port): ])
         return decoded_data[1 + len(dest_addr) + len(port):], 0
       else:
         return decoded_data, 0
@@ -112,7 +113,7 @@ if __name__ == '__main__':
   #encryptor = Plain()
 
   event_loop = EventLoop()
-  ss_local = SSServer(event_loop, ('127.0.0.1', 3456), encryptor)
+  ss_local = SSServer(event_loop, ('127.0.0.1', [3456, 2888, 7999]), encryptor)
   event_loop.add_event(ss_local.coroutine)
   event_loop.run_forever()
 

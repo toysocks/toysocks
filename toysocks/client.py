@@ -13,6 +13,7 @@ import traceback
 import logging
 from typing import *
 import socket
+import random
 
 """
 client <---> ss-local <--[encrypted]--> ss-remote <---> target
@@ -27,7 +28,7 @@ class SSLocal(AsyncFunc):
   def __init__(self,
                loop: EventLoop,
                local_addr: Tuple[str, int],
-               remote_addr: Tuple[str, int],
+               remote_addr: Tuple[str, Union[int, List[int]]],
                encryptor : Encryptor):
     self.loop = loop
     self.local_ip, self.local_port = local_addr
@@ -138,7 +139,13 @@ class SSLocal(AsyncFunc):
       try:
         if addr_type == 3:
           #logging.info()
-          remote_sock.connect((self.remote_ip, self.remote_port))
+          if isinstance(self.remote_port, int):
+            remote_sock.connect((self.remote_ip, self.remote_port))
+          elif isinstance(self.remote_port, list):
+            port_choice = random.choice(self.remote_port)
+            remote_sock.connect((self.remote_ip, port_choice))
+          else:
+            raise ValueError(self.remote_port)
         else:
           logging.error("Unknown addr_type: %d" % addr_type)
           return
@@ -166,11 +173,8 @@ class SSLocal(AsyncFunc):
 
       def client_data_to_local_data(data : bytes, offset : int):
         if offset == 0:
-          logging.debug("socks offset: %d" % offset)
           sock_addr = get_socks_addr_bytes_from_request(request_bytes)
           whole_data = sock_addr + data
-          logging.debug("|whole_data|=%d" % len(whole_data))
-          logging.debug("data sent to remote:\n%s" % whole_data[len(sock_addr): ])
 
           return self.encryptor.encode(whole_data, offset), + len(sock_addr)
         else:
@@ -204,6 +208,6 @@ if __name__ == '__main__':
   #encryptor = Plain()
 
   event_loop = EventLoop()
-  ss_local = SSLocal(event_loop, ('127.0.0.1', 1234), ('127.0.0.1', 3456), encryptor=encryptor)
+  ss_local = SSLocal(event_loop, ('127.0.0.1', 2333), ('127.0.0.1', [3456, 2888, 7999]), encryptor=encryptor)
   event_loop.add_event(ss_local.coroutine)
   event_loop.run_forever()

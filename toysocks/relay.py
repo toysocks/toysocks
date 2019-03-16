@@ -44,8 +44,9 @@ def relay(sock1 : socket.socket,
             data = data_queues[source_sock.fileno()][0]
             check_socket(source_sock)
             sent = source_sock.send(data)
-            if source_sock.fileno() == sock2.fileno():
-              logging.debug("data sent to sock2 (%d):\n%s" % (sent, data[0 : sent]))
+
+            # if source_sock.fileno() == sock2.fileno():
+            #   logging.debug("data sent to sock2 (%d):\n%s" % (sent, data[0 : sent]))
 
             if sent < len(data):
               data_queues[source_sock.fileno()][0] = data[sent:]

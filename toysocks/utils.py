@@ -11,6 +11,17 @@ def sock_callback(future : Future, sock : socket.socket, value=None):
 def reg_socket_future_read(f : Future, sock : socket.socket, value=None):
   register_read(sock.fileno(), sock_callback(f, sock, value))
 
+def reg_multi_sockets_future_read(f : Future, socks: List[socket.socket]):
+  def sock_cb(sock : socket.socket):
+    def cb(event_key, event_mask):
+      for s in socks:
+        unregister(s.fileno())
+      f.set_result(sock)
+    return cb
+
+  for s in socks:
+    register_read(s.fileno(), sock_cb(s))
+
 def reg_socket_future_write(f : Future, sock : socket.socket, value=None):
   register_write(sock.fileno(), sock_callback(f, sock, value))
 
