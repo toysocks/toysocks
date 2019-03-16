@@ -3,6 +3,9 @@ from toysocks.encrypt import XOREncryptor
 from toysocks.eventloop import EventLoop
 import json
 import sys
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 config_path = "/root/toysocks.json"
 
