@@ -135,7 +135,10 @@ class SSLocal(AsyncFunc):
 
   def local_relay(self, client_sock : socket.socket, client_addr : Tuple[str, int], request_bytes):
     try:
-      ver, cmd_code, addr_type, dest_addr, port = decode_connection_request(request_bytes)
+      try:
+        ver, cmd_code, addr_type, dest_addr, port = decode_connection_request(request_bytes)
+      except Exception as e:
+        raise ValueError("Invalid request bytes %r" % request_bytes)
 
       remote_sock = socket.socket()
       remote_sock.setblocking(False)
