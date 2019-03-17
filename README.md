@@ -1,5 +1,7 @@
 # toysocks
 
+A clean, light-weight and encrypted socks5 proxy with no dependencies.
+
 ## Remote
 
 ### Configuration
@@ -47,7 +49,7 @@ The client implements part of a SOCKS5 protocol, mainly to connect with the brow
   increase robustness.
 
 ### Run
-+ Dependency: Python3.5.2+, only tested on Windows 10
++ Dependency: Python3.5.2+, tested on Windows 10 and Ubuntu 18.04
 
 ```
 cd toysocks/
