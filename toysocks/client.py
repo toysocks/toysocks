@@ -5,7 +5,7 @@ from toysocks.utils import sock_callback, reg_socket_future_read, reg_socket_fut
   close_if, port_to_hex_string, bytes_to_port_num
 from toysocks.socks5 import decode_greating, decode_connection_request, \
   encode_connection_repsonse, get_socks_addr_bytes_from_request
-from toysocks.utils import SocketFailure, check_socket
+from toysocks.utils import SocketFailure, check_socket, ShutdownException
 from toysocks.relay import relay
 from toysocks.encrypt import Encryptor, XOREncryptor, Plain
 from toysocks.port_selector import PortSelector
@@ -95,6 +95,10 @@ class SSLocal(AsyncFunc):
     reg_socket_future_read(future, client_sock)
     yield future
     greeting : bytes = client_sock.recv(4096)
+
+    if greeting == b'shutdown':
+      raise ShutdownException('')
+
     try:
       ver, length, methods = decode_greating(greeting)
       if not ver == 5 or 0 not in methods:

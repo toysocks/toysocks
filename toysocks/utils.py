@@ -34,6 +34,11 @@ class SocketFailure(Exception):
     # Call the base class constructor with the parameters it needs
     super(Exception, self).__init__(message)
 
+class ShutdownException(Exception):
+  def __init__(self, message):
+    # Call the base class constructor with the parameters it needs
+    super(Exception, self).__init__(message)
+
 def check_socket(sock : socket.socket):
   if sock.fileno() == -1:
     raise SocketFailure(str(sock) + " has an issue. ")
