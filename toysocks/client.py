@@ -141,7 +141,9 @@ class SSLocal(AsyncFunc):
       try:
         ver, cmd_code, addr_type, dest_addr, port = decode_connection_request(request_bytes)
       except Exception as e:
-        raise ValueError("Invalid request bytes %r" % request_bytes)
+        raise ValueError("Invalid request bytes %r from %s:%d" % ((request_bytes,) + client_addr))
+
+      logging.info("Request for %r from %s:%d" % ((dest_addr,) + client_addr))
 
       remote_sock = socket.socket()
       remote_sock.setblocking(False)
