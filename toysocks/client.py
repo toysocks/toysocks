@@ -17,6 +17,7 @@ import traceback
 import logging
 from typing import *
 import socket
+import time
 import random
 
 """
@@ -143,7 +144,7 @@ class SSLocal(AsyncFunc):
       except Exception as e:
         raise ValueError("Invalid request bytes %r from %s:%d" % ((request_bytes,) + client_addr))
 
-      logging.info("Request for %r from %s:%d" % ((dest_addr,) + client_addr))
+      logging.info("[%s:%d] for %r" % (client_addr + (dest_addr,)))
 
       remote_sock = socket.socket()
       remote_sock.setblocking(False)
@@ -200,8 +201,11 @@ class SSLocal(AsyncFunc):
         #logging.debug("data get from remote (%d, %d):\n%s" % (offset, len(decoded), decoded))
         return decoded, 0
 
+      relay_start = time.time()
       yield from relay(client_sock, remote_sock,
                        client_data_to_local_data, local_data_to_client_data)
+      logging.info("[%s:%d] for %r relay used %f" % (client_addr + (dest_addr, time.time() - relay_start)))
+
 
     except ValueError as e:
       logging.error(str(e))
