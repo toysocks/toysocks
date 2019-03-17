@@ -9,6 +9,9 @@ from toysocks.utils import SocketFailure, check_socket
 from toysocks.relay import relay
 from toysocks.encrypt import Encryptor, XOREncryptor, Plain
 from toysocks.port_selector import PortSelector
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 import traceback
 import logging
