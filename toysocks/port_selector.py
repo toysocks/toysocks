@@ -21,5 +21,6 @@ class TimedPortSelector(PortSelector):
   def select(self, ports: List[int]):
     now = int(time.time())
     if now - self.last_switch > self.interval:
+      self.last_switch = now
       self.choice = random.randint(0, 65535)
     return ports[self.choice % len(ports)]
