@@ -75,5 +75,5 @@ def relay(sock1 : socket.socket,
   finally:
     check_socket(sock1)
     check_socket(sock2)
-
+    sock1.close()
     sock2.close()
