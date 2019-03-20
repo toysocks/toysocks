@@ -1,7 +1,6 @@
 from typing import *
 import hashlib
 import time
-import numpy as np
 
 class Encryptor:
 
@@ -20,19 +19,6 @@ class XOREncryptor(Encryptor):
 
   def encode(self, data : bytes, offset : int = 0) -> bytes:
     return bytes([ self.xor[(offset + i) % len(self.xor) ] ^ data[i] for i in range(len(data)) ])
-
-  def decode(self, data : bytes, offset : int = 0) -> bytes:
-    return self.encode(data, offset)
-
-class XOREncryptor2(Encryptor):
-
-  def __init__(self, password : str):
-    sha = hashlib.sha512()
-    sha.update(password.encode('utf-8'))
-    self.xor = sha.digest()
-
-  def encode(self, data : bytes, offset : int = 0) -> bytes:
-    return bytes(( self.xor[(offset + i) % len(self.xor) ] ^ data[i] for i in range(len(data)) ))
 
   def decode(self, data : bytes, offset : int = 0) -> bytes:
     return self.encode(data, offset)
