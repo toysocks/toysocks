@@ -57,6 +57,7 @@ class SSLocal(AsyncFunc):
 
   def run(self):
     local_sock = socket.socket()
+    local_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     local_sock.setblocking(False)
     local_sock.bind((self.local_ip, self.local_port))
     local_sock.listen()
