@@ -23,6 +23,24 @@ class XOREncryptor(Encryptor):
   def decode(self, data : bytes, offset : int = 0) -> bytes:
     return self.encode(data, offset)
 
+class TaggedXOREncryptor(Encryptor):
+
+  def __init__(self, password : str):
+    self.xor_encoder = XOREncryptor(password)
+
+  def encode(self, data : bytes, offset : int = 0) -> bytes:
+    if offset == 0:
+      return b'\xee' + self.xor_encoder.encode(data, offset)
+    else:
+      return self.xor_encoder.encode(data, offset)
+
+  def decode(self, data : bytes, offset : int = 0) -> bytes:
+    if offset == 0:
+      return self.xor_encoder.encode(data[1:], offset)
+    else:
+      return self.xor_encoder.encode(data, offset - 1)
+
+
 class Plain(Encryptor):
 
   def encode(self, data : bytes, offset : int = 0) -> bytes:

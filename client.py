@@ -1,5 +1,5 @@
 from toysocks.client import SSLocal
-from toysocks.encrypt import XOREncryptor
+from toysocks.encrypt import XOREncryptor, TaggedXOREncryptor
 from toysocks.eventloop import EventLoop
 from toysocks.port_selector import TimedPortSelector
 import json
@@ -8,7 +8,12 @@ from pathlib import Path
 import os
 home = str(Path.home())
 
-config_path = os.path.join(home, "toysocks.json")
+# sys.argv = ["", r"E:\shit\keg\toysocks-client-test.json"]
+
+if len(sys.argv) == 1:
+  config_path = os.path.join(home, "toysocks.json")
+else:
+  config_path = sys.argv[1]
 
 config = json.load(open(config_path))
 
@@ -18,7 +23,11 @@ remote_ip = config["remote_ip"]
 remote_port = config["remote_port"]
 password = config["password"]
 
-encryptor = XOREncryptor(password)
+if "tagged" in config and config["tagged"]:
+  encryptor = TaggedXOREncryptor(password)
+  print(encryptor)
+else:
+  encryptor = XOREncryptor(password)
 selector = TimedPortSelector(interval=6 * 3600) # Switch port every x hours
 
 event_loop = EventLoop()
