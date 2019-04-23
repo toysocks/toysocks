@@ -90,6 +90,7 @@ class SSServer(AsyncFunc):
           server_dest = real_addr.decode('utf-8'), bytes_to_port_num(port)
         else:
           logging.error("Sorry, not implemented for ipv6. ")
+          raise ValueError("Unimplemented addr_type: %d" % addr_type)
 
         try:
           logging.info("%s:%d reaching for %s:%d" % (local_addr + server_dest))

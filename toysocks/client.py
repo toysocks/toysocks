@@ -4,7 +4,7 @@ from selectors import EVENT_WRITE, EVENT_READ
 from toysocks.utils import sock_callback, reg_socket_future_read, reg_socket_future_write,\
   close_if, port_to_hex_string, bytes_to_port_num
 from toysocks.socks5 import decode_greating, decode_connection_request, \
-  encode_connection_repsonse, get_socks_addr_bytes_from_request
+  encode_connection_repsonse, get_socks_addr_bytes_from_request, bytes_ip_to_string
 from toysocks.utils import SocketFailure, check_socket, ShutdownException
 from toysocks.relay import relay
 from toysocks.encrypt import Encryptor, XOREncryptor, Plain
@@ -145,10 +145,12 @@ class SSLocal(AsyncFunc):
     try:
       try:
         ver, cmd_code, addr_type, dest_addr, port = decode_connection_request(request_bytes)
+        if addr_type == 3:
+          logging.info("[%s:%d] for %r" % (client_addr + (dest_addr,)))
+        elif addr_type == 1:
+          logging.info("[%s:%d] for %r" % (client_addr + (bytes_ip_to_string(dest_addr),)))
       except Exception as e:
         raise ValueError("Invalid request bytes %r from %s:%d" % ((request_bytes,) + client_addr))
-
-      logging.info("[%s:%d] for %r" % (client_addr + (dest_addr,)))
 
       remote_sock = socket.socket()
       remote_sock.setblocking(False)

@@ -41,15 +41,15 @@ def bytes_ip_to_string(ip : bytes):
 def decode_sock5_addr(request : bytes):
   addr_type = request[0]
   if addr_type == 1:
-    dest_addr = request[0 : 4]
-    port = request[4 : 4 + 2]
+    dest_addr = request[1 : 5]
+    port = request[5 : 5 + 2]
   elif addr_type == 3:
     addr_len = request[1]
     dest_addr = request[1 : 1 + 1 + addr_len]
     port = request[1 + 1 + addr_len : 1 + 1 + addr_len + 2]
   elif addr_type == 4:
-    dest_addr = request[0 : 16]
-    port = request[16 : 16 + 2]
+    dest_addr = request[1 : 17]
+    port = request[17 : 17 + 2]
   else:
     raise ValueError("Invalid request bytes: %s" % addr_type)
 
