@@ -80,7 +80,6 @@ class SSServer(AsyncFunc):
 
     def local_data_to_server_data(data : bytes, offset : int):
       decoded_data = self.encryptor.decode(data, offset)
-      print("local_data_to_server_data called!")
       if offset == 0:
         addr_type, dest_addr, port = decode_sock5_addr(decoded_data)
         if addr_type == 1:
@@ -104,7 +103,6 @@ class SSServer(AsyncFunc):
         return decoded_data, 0
 
     def server_to_local_data(data : bytes, offset : int):
-      print("server_to_local_data called!")
       encoded = self.encryptor.encode(data, offset)
       #logging.debug("data get from server (%d, %d):\n%s" % (offset, len(data), data))
       return encoded, 0

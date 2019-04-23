@@ -185,7 +185,7 @@ class SSLocal(AsyncFunc):
       client_hex_port = port_to_hex_string(sock_name[1])
 
       #response = encode_connection_repsonse(ver, 0, addr_type, dest_addr, port)
-      response = b'\x05\x00\x00' + bytes([addr_type]) + client_hex_addr + client_hex_port
+      response = b'\x05\x00\x00\x01' + client_hex_addr + client_hex_port
       # logging.info("response:  %r" % response)
 
       check_socket(client_sock)
