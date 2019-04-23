@@ -26,6 +26,8 @@ def relay(sock1 : socket.socket,
   }
 
   try:
+    stopped = 0
+
     while True:
       future = Future()
 
@@ -58,8 +60,9 @@ def relay(sock1 : socket.socket,
 
           data = source_sock.recv(4096)
           if len(data) == 0:
-            logging.info("%s relay data recv 0" % source_sock)
-            break
+            stopped += 1
+            if stopped >= 2:
+              break
           if tg_sock.fileno() == sock2.fileno():
             encoded_data, adjust = sock1_data_to_sock2_data(data, data_offset[sock1.fileno()])
             data_offset[sock1.fileno()] += len(data) + adjust
@@ -73,6 +76,8 @@ def relay(sock1 : socket.socket,
         logging.error("relay IOError: %s" % e)
         if e.errno == errno.EWOULDBLOCK:
           pass
+        else:
+          break
 
   finally:
     check_socket(sock1)

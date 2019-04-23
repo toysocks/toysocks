@@ -152,7 +152,7 @@ class SSLocal(AsyncFunc):
         if addr_type == 3:
           logging.info("[%s:%d] for %r" % (client_addr + (dest_addr,)))
         elif addr_type == 1:
-          logging.info("[%s:%d] for %r" % (client_addr + (bytes_ip_to_string(dest_addr),)))
+          logging.info("[%s:%d] for [%s:%r]" % (client_addr + (bytes_ip_to_string(dest_addr), port)))
       except Exception as e:
         raise ValueError("Invalid request bytes %r from %s:%d" % ((request_bytes,) + client_addr))
 
@@ -183,28 +183,23 @@ class SSLocal(AsyncFunc):
       sock_name = client_sock.getsockname()
       client_hex_addr = socket.inet_aton(sock_name[0])
       client_hex_port = port_to_hex_string(sock_name[1])
-
       #response = encode_connection_repsonse(ver, 0, addr_type, dest_addr, port)
       response = b'\x05\x00\x00\x01' + client_hex_addr + client_hex_port
-      # logging.info("response:  %r" % response)
+      logging.info("req bytes:  %r" % request_bytes)
+      logging.info("response:  %r" % response)
 
       check_socket(client_sock)
       client_sock.send(response)
 
-      def client_data_to_local_data(data : bytes, offset : int):
-        print("client_data_to_local_data called")
-        if offset == 0:
-          sock_addr = get_socks_addr_bytes_from_request(request_bytes)
-          whole_data = sock_addr + data
+      sock_addr = get_socks_addr_bytes_from_request(request_bytes)
+      remote_sock.send(self.encryptor.encode(sock_addr, 0))
+      len_sock_addr = len(sock_addr)
 
-          return self.encryptor.encode(whole_data, offset), + len(sock_addr)
-        else:
-          whole_data = data
-          return self.encryptor.encode(whole_data, offset), 0
+      def client_data_to_local_data(data : bytes, offset : int):
+        return self.encryptor.encode(data, offset + len_sock_addr), 0
 
 
       def local_data_to_client_data(data : bytes, offset : int):
-        print("local_data_to_client_data called")
         # return self.encryptor.decode(data, offset)
         decoded = self.encryptor.decode(data, offset)
         #logging.debug("data get from remote (%d, %d):\n%s" % (offset, len(decoded), decoded))
