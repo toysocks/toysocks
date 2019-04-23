@@ -8,7 +8,7 @@ from toysocks.socks5 import decode_greating, decode_connection_request, \
 from toysocks.utils import SocketFailure, check_socket, bytes_to_port_num
 from toysocks.encrypt import Encryptor, XOREncryptor, Plain
 from toysocks.relay import relay
-from toysocks.socks5 import decode_sock5_addr
+from toysocks.socks5 import decode_sock5_addr, bytes_ip_to_string
 
 from typing import *
 import socket
@@ -82,16 +82,20 @@ class SSServer(AsyncFunc):
       decoded_data = self.encryptor.decode(data, offset)
       if offset == 0:
         addr_type, dest_addr, port = decode_sock5_addr(decoded_data)
-        if addr_type != 3: # TODO: Type 1 and Type 4
-          raise ValueError("Only url is supported! Sorry!")
-        if addr_type == 3:
+        if addr_type == 1:
+          real_addr = dest_addr
+          server_dest = bytes_ip_to_string(real_addr), bytes_to_port_num(port)
+        elif addr_type == 3:
           real_addr = dest_addr[1:]
-          try:
-            server_dest = real_addr.decode('utf-8'), bytes_to_port_num(port)
-            logging.info("%s:%d reaching for %s:%d" % (local_addr + server_dest))
-            server_sock.connect(server_dest)
-          except BlockingIOError:
-            pass
+          server_dest = real_addr.decode('utf-8'), bytes_to_port_num(port)
+        else:
+          logging.error("Sorry, not implemented for ipv6. ")
+
+        try:
+          logging.info("%s:%d reaching for %s:%d" % (local_addr + server_dest))
+          server_sock.connect(server_dest)
+        except BlockingIOError:
+          pass
 
         return decoded_data[1 + len(dest_addr) + len(port):], 0
       else:

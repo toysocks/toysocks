@@ -154,18 +154,13 @@ class SSLocal(AsyncFunc):
       remote_sock.setblocking(False)
 
       try:
-        if addr_type == 3:
-          #logging.info()
-          if isinstance(self.remote_port, int):
-            remote_sock.connect((self.remote_ip, self.remote_port))
-          elif isinstance(self.remote_port, list):
-            port_choice = self.select_port(self.remote_port)
-            remote_sock.connect((self.remote_ip, port_choice))
-          else:
-            raise ValueError(self.remote_port)
+        if isinstance(self.remote_port, int):
+          remote_sock.connect((self.remote_ip, self.remote_port))
+        elif isinstance(self.remote_port, list):
+          port_choice = self.select_port(self.remote_port)
+          remote_sock.connect((self.remote_ip, port_choice))
         else:
-          logging.error("Unknown addr_type: %d" % addr_type)
-          return
+          raise ValueError(self.remote_port)
       except BlockingIOError as e:
         pass
 

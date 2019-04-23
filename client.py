@@ -8,7 +8,7 @@ from pathlib import Path
 import os
 home = str(Path.home())
 
-# sys.argv = ["", r"E:\shit\keg\toysocks-client-test.json"]
+sys.argv = ["", r"E:\shit\keg\toysocks-client.json"]
 
 if len(sys.argv) == 1:
   config_path = os.path.join(home, "toysocks.json")

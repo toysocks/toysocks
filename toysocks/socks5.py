@@ -35,6 +35,9 @@ def encode_connection_repsonse(ver, rep, addr_type, addr : bytes, port):
 
   return bytes([ver, rep, 0, addr_type]) + addr + bytes(port_bytes)
 
+def bytes_ip_to_string(ip : bytes):
+  return ".".join([str(x) for x in ip])
+
 def decode_sock5_addr(request : bytes):
   addr_type = request[0]
   if addr_type == 1:
