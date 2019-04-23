@@ -73,12 +73,16 @@ class SSLocal(AsyncFunc):
       yield from self.socks_auth(client_sock, client_addr)
       yield from self.relay_connection(client_sock, client_addr)
     except ValueError as e:
+      traceback.print_exc()
       logging.error(str(e))
     except SocketFailure as e:
+      traceback.print_exc()
       logging.error(str(e))
     except ConnectionAbortedError as e:
+      traceback.print_exc()
       logging.error(str(e))
     except OSError as e:
+      traceback.print_exc()
       logging.error(str(e))
     finally:
       if client_sock.fileno() != -1:
@@ -113,9 +117,9 @@ class SSLocal(AsyncFunc):
     +--------------+
     """
     client_sock.send(bytes([5, 0]))
-    # future = Future()
-    # reg_socket_future_write(future, client_sock)
-    # yield future
+    future = Future()
+    reg_socket_future_write(future, client_sock)
+    yield future
 
 
   def relay_connection(self, client_sock : socket.socket, client_addr : Tuple[str, int]):
@@ -166,6 +170,8 @@ class SSLocal(AsyncFunc):
       except BlockingIOError as e:
         pass
 
+      logging.info("connected to %s" % (remote_sock.getsockname(),))
+
       future = Future()
       reg_socket_future_write(future, remote_sock)
       yield future
@@ -179,13 +185,14 @@ class SSLocal(AsyncFunc):
       client_hex_port = port_to_hex_string(sock_name[1])
 
       #response = encode_connection_repsonse(ver, 0, addr_type, dest_addr, port)
-      response = b'\x05\x00\x00\x01' + client_hex_addr + client_hex_port
-      #logging.debug("response:  %r" % response)
+      response = b'\x05\x00\x00' + bytes([addr_type]) + client_hex_addr + client_hex_port
+      # logging.info("response:  %r" % response)
 
       check_socket(client_sock)
       client_sock.send(response)
 
       def client_data_to_local_data(data : bytes, offset : int):
+        print("client_data_to_local_data called")
         if offset == 0:
           sock_addr = get_socks_addr_bytes_from_request(request_bytes)
           whole_data = sock_addr + data
@@ -197,6 +204,7 @@ class SSLocal(AsyncFunc):
 
 
       def local_data_to_client_data(data : bytes, offset : int):
+        print("local_data_to_client_data called")
         # return self.encryptor.decode(data, offset)
         decoded = self.encryptor.decode(data, offset)
         #logging.debug("data get from remote (%d, %d):\n%s" % (offset, len(decoded), decoded))

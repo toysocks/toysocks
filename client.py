@@ -8,7 +8,7 @@ from pathlib import Path
 import os
 home = str(Path.home())
 
-sys.argv = ["", r"E:\shit\keg\toysocks-client.json"]
+sys.argv = ["", r"E:\shit\keg\toysocks-client-test.json"]
 
 if len(sys.argv) == 1:
   config_path = os.path.join(home, "toysocks.json")
@@ -25,12 +25,12 @@ password = config["password"]
 
 if "tagged" in config and config["tagged"]:
   encryptor = TaggedXOREncryptor(password)
-  print(encryptor)
 else:
   encryptor = XOREncryptor(password)
 selector = TimedPortSelector(interval=6 * 3600) # Switch port every x hours
 
 event_loop = EventLoop()
+print(encryptor)
 ss_local = SSLocal(event_loop, (local_ip, local_port), (remote_ip, remote_port), encryptor, selector)
 event_loop.add_event(ss_local.coroutine)
 event_loop.run_forever()

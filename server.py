@@ -7,7 +7,7 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-# sys.argv = ["", r'E:\shit\keg\toysocks-server-test.json']
+sys.argv = ["", r'E:\shit\keg\toysocks-server-test.json']
 
 if len(sys.argv) == 1:
   config_path = "/root/toysocks.json"

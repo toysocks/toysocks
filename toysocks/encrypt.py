@@ -36,9 +36,9 @@ class TaggedXOREncryptor(Encryptor):
 
   def decode(self, data : bytes, offset : int = 0) -> bytes:
     if offset == 0:
-      return self.xor_encoder.encode(data[1:], offset)
+      return self.xor_encoder.decode(data[1:], offset)
     else:
-      return self.xor_encoder.encode(data, offset - 1)
+      return self.xor_encoder.decode(data, offset - 1)
 
 
 class Plain(Encryptor):
@@ -79,7 +79,7 @@ if __name__ == '__main__':
   # decoded = xorenc.decode(abcd[0:20], ) + xorenc.decode(abcd[20:], 20)
   # print(decoded)
 
-  x2 = XOREncryptor2("password")
+  x2 = XOREncryptor("password")
   t1 = time.time()
   for i in range(30000):
     x2.encode(b"a" * 1024)

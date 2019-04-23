@@ -10,7 +10,7 @@ from selectors import EVENT_READ, EVENT_WRITE
 def relay(sock1 : socket.socket,
           sock2 : socket.socket,
           sock1_data_to_sock2_data = lambda x, offset : (x, 0),
-          sock2_data_to_sock1_data = lambda x, head, offset : (x, 0),):
+          sock2_data_to_sock1_data = lambda x, offset : (x, 0),):
 
   def relay_callback(source_sock, tg_sock, event_key, event_mask):
     future.set_result((source_sock, tg_sock, event_key, event_mask))
@@ -58,6 +58,7 @@ def relay(sock1 : socket.socket,
 
           data = source_sock.recv(4096)
           if len(data) == 0:
+            logging.info("%s relay data recv 0" % source_sock)
             break
           if tg_sock.fileno() == sock2.fileno():
             encoded_data, adjust = sock1_data_to_sock2_data(data, data_offset[sock1.fileno()])
@@ -69,6 +70,7 @@ def relay(sock1 : socket.socket,
           data_queues[tg_sock.fileno()].append(encoded_data)
 
       except IOError as e:
+        logging.error("relay IOError: %s" % e)
         if e.errno == errno.EWOULDBLOCK:
           pass
 
