@@ -8,7 +8,7 @@ from toysocks.socks5 import decode_greating, decode_connection_request, \
 from toysocks.utils import SocketFailure, check_socket, ShutdownException
 from toysocks.relay import relay
 from toysocks.encrypt import Encryptor, XOREncryptor, Plain
-from toysocks.port_selector import PortSelector
+from toysocks.port_selector import PortSelector, TimedPortSelector
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -229,6 +229,10 @@ if __name__ == '__main__':
   #encryptor = Plain()
 
   event_loop = EventLoop()
-  ss_local = SSLocal(event_loop, ('127.0.0.1', 2333), ('127.0.0.1', [3456, 2888, 7999]), encryptor=encryptor)
+  ss_local = SSLocal(event_loop,
+                     ('127.0.0.1', 2333),
+                     ('127.0.0.1', [3456, 2888, 7999]),
+                     encryptor=encryptor,
+                     port_selector=TimedPortSelector(interval=1000))
   event_loop.add_event(ss_local.coroutine)
   event_loop.run_forever()

@@ -76,6 +76,8 @@ def relay(sock1 : socket.socket,
         logging.error("relay IOError: %s" % e)
         if e.errno == errno.EWOULDBLOCK:
           pass
+        elif e.errno == errno.ENOTCONN:
+          pass
         else:
           break
 
