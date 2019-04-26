@@ -73,12 +73,14 @@ def relay(sock1 : socket.socket,
           data_queues[tg_sock.fileno()].append(encoded_data)
 
       except IOError as e:
-        logging.error("relay IOError: %s" % e)
         if e.errno == errno.EWOULDBLOCK:
           pass
         elif e.errno == errno.ENOTCONN:
           pass
+        elif e.errno == errno.EAGAIN:
+          pass
         else:
+          logging.error("relay IOError: %s" % e)
           break
 
   finally:
