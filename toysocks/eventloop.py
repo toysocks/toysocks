@@ -87,6 +87,7 @@ class EventLoop:
           else:
             break
 
+      time.sleep(0.001)
       results = _selector.select(0.01)
       for event_key, event_mask in results:
         callback = event_key.data

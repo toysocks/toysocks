@@ -6,7 +6,7 @@ from toysocks.utils import sock_callback, reg_socket_future_read, reg_socket_fut
 from toysocks.socks5 import decode_greating, decode_connection_request, \
   encode_connection_repsonse
 from toysocks.utils import SocketFailure, check_socket, bytes_to_port_num
-from toysocks.encrypt import Encryptor, XOREncryptor, Plain
+from toysocks.encrypt import Encryptor, XOREncryptor, Plain, TaggedXOREncryptor
 from toysocks.relay import relay
 from toysocks.socks5 import decode_sock5_addr, bytes_ip_to_string
 
@@ -49,7 +49,6 @@ class SSServer(AsyncFunc):
 
   def wait_client_connection(self, remote_socks: List[socket.socket]):
     future = Future()
-    #reg_socket_future_read(future, remote_sock)
     reg_multi_sockets_future_read(future, remote_socks)
     remote_sock = yield future
     local_sock, local_addr = remote_sock.accept()
@@ -115,8 +114,7 @@ if __name__ == '__main__':
   ver, length, methods = decode_greating(bytes([0, 1, 2, 3]))
   print(methods)
 
-  encryptor = XOREncryptor("fuckyouleatherman")
-  print(encryptor.xor)
+  encryptor = TaggedXOREncryptor("fuckyouleatherman")
   #encryptor = Plain()
 
   event_loop = EventLoop()

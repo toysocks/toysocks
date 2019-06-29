@@ -7,7 +7,7 @@ from toysocks.socks5 import decode_greating, decode_connection_request, \
   encode_connection_repsonse, get_socks_addr_bytes_from_request, bytes_ip_to_string
 from toysocks.utils import SocketFailure, check_socket, ShutdownException
 from toysocks.relay import relay
-from toysocks.encrypt import Encryptor, XOREncryptor, Plain
+from toysocks.encrypt import Encryptor, XOREncryptor, Plain, TaggedXOREncryptor
 from toysocks.port_selector import PortSelector, TimedPortSelector
 import logging
 
@@ -51,6 +51,8 @@ class SSLocal(AsyncFunc):
     reg_socket_future_read(future, local_sock)
     yield future
     client_sock, client_addr = local_sock.accept()
+    print(client_addr)
+    print(client_sock.getsockname())
     client_sock.setblocking(False)
     logging.info("Connection from %s:%s" % client_addr)
     self.loop.add_event(self.client_handle(client_sock, client_addr))
@@ -224,8 +226,7 @@ if __name__ == '__main__':
   ver, length, methods = decode_greating(bytes([0, 1, 2, 3]))
   print(methods)
 
-  encryptor = XOREncryptor("fuckyouleatherman")
-  print(encryptor.xor)
+  encryptor = TaggedXOREncryptor("fuckyouleatherman")
   #encryptor = Plain()
 
   event_loop = EventLoop()

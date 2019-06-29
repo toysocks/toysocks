@@ -1,3 +1,14 @@
+import re
+import socket
+
+ipv4_pattern = re.compile(r"(?:(?:2(?:[0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9])\.){3}(?:(?:2([0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9]))")
+
+def create_greating(methods: list=None):
+    if methods is None:
+        methods = [0]
+
+    return b'\x05' + bytes([len(methods)]) + bytes(methods)
+
 
 def decode_greating(greeting: bytes):
   """
@@ -10,6 +21,25 @@ def decode_greating(greeting: bytes):
 
   ver, length, methods = greeting[0], greeting[1], greeting[2:]
   return ver, length, set(methods)
+
+
+def create_connection_request(dest: str, port_num: int):
+  dest = dest.encode('utf-8')
+              # CMD        # ADDR TYPE
+  # return b'\x05\x01\x00' + b'\x03' + bytes([len(dest)]) + dest + int.to_bytes(port_num, 2, "big")
+  return b'\x05\x01\x00' + create_socks_addr(dest, port_num)
+
+
+def create_socks_addr(dest: str, port_num: int):
+  if ipv4_pattern.match(dest):
+    addr_type = b'\x01'
+    addr_bytes = socket.inet_aton(dest) + int.to_bytes(port_num, 2, "big")
+  else:
+    addr_type = b'\x03'
+    addr_length = len(dest.encode("utf-8"))
+    addr_bytes = int.to_bytes(addr_length, 1, "big") + dest.encode("utf-8") + int.to_bytes(port_num, 2, "big")
+
+  return addr_type + addr_bytes
 
 
 def decode_connection_request(request: bytes):
