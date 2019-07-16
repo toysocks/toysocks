@@ -32,11 +32,13 @@ class SSLocalTcp(AsyncFunc):
 
   def __init__(self,
                loop: EventLoop,
+               local_ip: str,
                remote_addr: Tuple[str, Union[int, List[int]]],
                encryptor : Encryptor,
                port_selector: PortSelector,
                port_to_address: Dict[int, Tuple[str, int]]):
     self.loop = loop
+    self.local_ip = local_ip
     self.remote_ip, self.remote_port = remote_addr
     self.encryptor = encryptor
     self.port_selector = port_selector
@@ -64,11 +66,11 @@ class SSLocalTcp(AsyncFunc):
       local_sock = socket.socket()
       local_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
       local_sock.setblocking(False)
-      local_sock.bind(("127.0.0.1", port))
+      local_sock.bind((self.local_ip, port))
       local_sock.listen()
       local_socks.append(local_sock)
 
-      logging.info("Listening on from %s:%s" % ("127.0.0.1", port))
+      logging.info("Listening on from %s:%s" % (self.local_ip, port))
     try:
       while True:
         yield from self.wait_client_connection(local_socks)

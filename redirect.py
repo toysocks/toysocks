@@ -13,8 +13,14 @@ if len(sys.argv) == 1:
 else:
   config_path = sys.argv[1]
 
-config = json.load(open(config_path))
+default_config = {
+  "local_ip": "127.0.0.1"
+}
 
+config = json.load(open(config_path))
+default_config.update(config)
+
+local_ip = config["local_ip"]
 remote_ip = config["remote_ip"]
 remote_port = config["remote_port"]
 password = config["password"]
