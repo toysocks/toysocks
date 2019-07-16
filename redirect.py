@@ -35,6 +35,7 @@ selector = TimedPortSelector(interval=6 * 3600) # Switch port every x hours
 
 event_loop = EventLoop()
 ss_local = SSLocalTcp(event_loop,
+                      local_ip,
                       (remote_ip, remote_port),
                       encryptor,
                       selector,
